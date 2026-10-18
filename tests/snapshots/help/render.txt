@@ -1,0 +1,22 @@
+
+ Usage: clidocs render [OPTIONS] {tool}
+
+ Render a tool's help as an HTML page with search and open it in the browser.
+
+ The page goes to ~/Work/tools/docs/TOOL/index.html, built by InSpectra from the tool's docs
+ document, or from describe when the tool has no docs. Mac only: InSpectra needs dotnet.
+
+ Example: clidocs render semkit --no-open
+ -> ~/Work/tools/docs/semkit/index.html
+
+╭─ Arguments ──────────────────────────────────────────────────────────────────────────────────────╮
+│ *    tool      <str>  The command of an installed tool, e.g. semkit. [required]                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────╮
+│ --no-open          Write the page but do not open it in the browser.                             │
+│ --json             Emit machine-readable JSON output.                                            │
+│ --quiet            Suppress non-essential output.                                                │
+│ --dry-run          Show what would happen without making changes.                                │
+│ --help             Show this message and exit.                                                   │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+

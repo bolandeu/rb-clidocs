@@ -325,9 +325,23 @@
         ]
       },
       {
-        "name": "run",
-        "description": "Execute the project's main operation.\n\nExtension point: replace this body with a call into core.services (or a\nprovider) for this CLI's actual business logic.\n\nIf the real implementation changes external state, keep this shape:\ncheck `output.is_dry_run(ctx)` first and return a preview instead of\nacting, and — if the action is destructive/irreversible — call\n`output.require_confirmation(ctx, \"...\", confirm)` right before the\nchange itself (never before the dry-run preview).\n\nExample: clidocs run --dry-run",
+        "name": "render",
+        "description": "Render a tool's help as an HTML page with search and open it in the browser.\n\nThe page goes to ~/Work/tools/docs/TOOL/index.html, built by InSpectra from the tool's docs document, or from describe when the tool has no docs. Mac only: InSpectra needs dotnet.\n\nExample: clidocs render semkit --no-open\n-> ~/Work/tools/docs/semkit/index.html",
         "options": [
+          {
+            "name": "--no-open",
+            "description": "Write the page but do not open it in the browser.",
+            "metadata": [
+              {
+                "name": "x-rb-type",
+                "value": "boolean"
+              },
+              {
+                "name": "x-rb-default",
+                "value": false
+              }
+            ]
+          },
           {
             "name": "--json",
             "description": "Emit machine-readable JSON output.",
@@ -367,6 +381,23 @@
               {
                 "name": "x-rb-default",
                 "value": false
+              }
+            ]
+          }
+        ],
+        "arguments": [
+          {
+            "name": "tool",
+            "required": true,
+            "arity": {
+              "minimum": 1,
+              "maximum": 1
+            },
+            "description": "The command of an installed tool, e.g. semkit.",
+            "metadata": [
+              {
+                "name": "x-rb-type",
+                "value": "str"
               }
             ]
           }
@@ -853,7 +884,18 @@
       },
       {
         "name": "x-rb-external",
-        "value": []
+        "value": [
+          {
+            "name": "inspectra",
+            "required": true,
+            "why": "renders the help document as HTML (dotnet tool InSpectra.Gen; needs dotnet, Mac only)",
+            "min_version": null,
+            "check": "inspectra --version",
+            "detect": false,
+            "dist": null,
+            "url": null
+          }
+        ]
       }
     ]
   }

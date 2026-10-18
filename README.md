@@ -2,6 +2,19 @@
 
 Human CLI help in the browser: renders a tool's docs with InSpectra
 
+## Usage
+
+```bash
+clidocs render semkit          # ~/Work/tools/docs/semkit/index.html, opened in the browser
+clidocs render serp --no-open  # a tool without `docs` is rendered from `describe`
+```
+
+Mac only: needs dotnet (`brew install dotnet`) and InSpectra
+(`dotnet tool install -g InSpectra.Gen`; found on PATH or in `~/.dotnet/tools`).
+`DOTNET_ROOT` defaults to Homebrew's `/opt/homebrew/opt/dotnet/libexec`. The tool
+is asked for `describe --json` first and for `docs` only when describe lists it, in
+an empty working directory — never a blind `TOOL docs`.
+
 ## Development
 
 ```bash

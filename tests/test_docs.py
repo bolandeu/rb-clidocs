@@ -19,7 +19,7 @@ from rb_clidocs.commands import docs as docs_command
 from rb_clidocs.core import docs
 
 CLI = "clidocs"
-COMMANDS = ["init", "status", "doctor", "run", "describe", "docs", "auth", "skill", "config"]
+COMMANDS = ["init", "status", "doctor", "render", "describe", "docs", "auth", "skill", "config"]
 runner = CliRunner()
 
 
