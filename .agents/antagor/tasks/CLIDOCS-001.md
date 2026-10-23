@@ -1,7 +1,7 @@
 ---
 id: CLIDOCS-001
 title: Apply the verified copier update to template v1.27.1
-status: publish
+status: done
 attempts: 2
 blocked: false
 blocked_reason: null
