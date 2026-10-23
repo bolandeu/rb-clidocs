@@ -1,8 +1,8 @@
 schema = 1
 prefix = "CD"
 name = "clidocs"
-worker = "claude-code"
-checks = ["python3 scripts/check_command_docstrings.py", "uv run scripts/release.py --check"]
+checks = ["python3 scripts/check_command_docstrings.py"]
+heavy = ["rb-release check"]
 
 [review]
 required_types = ["feature", "bugfix"]  # chore and docs: the short path without review
@@ -11,3 +11,22 @@ required_types = ["feature", "bugfix"]  # chore and docs: the short path without
 versioning = "semver"
 changelog = "CHANGELOG.md"
 deploy_command = "sh scripts/deploy.sh"
+gate = "remote"
+gate_status_url = "https://homeserver.tailee01ab.ts.net:3000/api/v1/repos/bolandeu/clidocs/commits/{commit}/status"
+
+[connector]
+webhook_secret = "PLANE_WEBHOOK_SECRET_TOOLS"
+kind = "plane"
+base_url = "https://homeserver.tailee01ab.ts.net:8443"
+workspace = "tools"
+project_id = "f910a3a7-bf76-4ce2-8489-4c4cc1f3ef89"
+humans = ["r.bolandau@gmail.com"]
+
+[connector.states]
+ideas = "Backlog"
+queue = "Todo"
+in_progress = "In Progress"
+in_review = "In Review"
+publish = "Publishing"
+done = "Done"
+cancelled = "Cancelled"
