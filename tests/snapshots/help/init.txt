@@ -1,7 +1,7 @@
 
  Usage: clidocs init [OPTIONS]
 
- Initialize a project: creates .clidocs/config.toml in the target directory.
+ Initialize a project: creates .rb_clidocs/config.toml in the target directory.
 
  Example: clidocs init --name demo
 

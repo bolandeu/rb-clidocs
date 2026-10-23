@@ -18,7 +18,7 @@ uv tool install "rb-clidocs @ git+https://github.com/bolandeu/clidocs.git@vX.Y.Z
 ```
 
 Replace `vX.Y.Z` with the latest release tag (install from a tag, never a
-branch: standard §9).
+branch: [the Standard](https://homeserver.tailee01ab.ts.net:3000/bolandeu/cli-generator/src/branch/main/skills/cli-builder/reference/standard.md), Install).
 
 Same command on macOS, Linux and Windows; `uv tool upgrade rb-clidocs`
 updates it. Do not run from source unless asked to develop the CLI.
@@ -42,18 +42,12 @@ uv tool install "rb-clidocs @ git+ssh://git@github.com/bolandeu/clidocs.git@vX.Y
   `clidocs init --non-interactive`.
 - **`--non-interactive`** on anything that could prompt. It fails with a
   structured error instead of hanging.
-- **Credentials** live in the OS keychain or env vars
-  (`CLIDOCS_<PROVIDER>_<FIELD>`), never in arguments or
-  config. `auth status --check --json` reports every provider (source,
-  status, expiry, quota — never values; exit 3 if a required one isn't
-  ok); log in with `auth login`; never ask the user to paste a secret into
-  a command line.
 - **Destructive commands** are the ones whose `--help` shows `--dry-run`
   and `--confirm`. Always: run with `--dry-run`, show the user, get
   explicit sign-off, then `--confirm --non-interactive`. Never chain
   straight to `--confirm` without a human having seen the dry-run.
 - **`doctor --json`** first when something looks off — it reports
-  project, config, version compatibility and credential readiness.
+  what the CLI needs to run: its version, the project, its config and the external programs.
 - **`describe --json`** — the whole CLI as one machine-readable OpenCLI
   document (commands, options, exit codes, env vars, data): the bare
   document, no `{"ok": ...}` envelope.
@@ -66,7 +60,7 @@ Read exit code → `error.code` → `error.action` (the concrete next command).
     0  ok
     1  general (UNEXPECTED = a bug: re-run with --verbose, report; ABORTED = user said no)
     2  invalid arguments
-    3  auth required          → clidocs auth login
+    3  auth required
     4  project not initialized → clidocs init
     5  provider error (network / external service; already retried) → retry later
     6  CLI too old for this project → uv tool upgrade rb-clidocs

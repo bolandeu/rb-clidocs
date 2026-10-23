@@ -12,7 +12,7 @@ programs and template version.
 
 The output is a cross-tool contract like `auth status`: tests/test_describe.py
 validates it against the OpenCLI schema and snapshots it. Changing or removing
-anything in it is a breaking change (conventions.md).
+anything in it is a breaking change.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ import platformdirs
 from .._distribution import DIST_NAME, TEMPLATE_VERSION, TOOL
 from . import data_files, deps
 from .errors import EXIT_CODES
-from .version import DEV_VERSION, cli_name, installed_version, module_exists, package_summary
+from .version import DEV_VERSION, cli_name, installed_version, module_exists, optional_module, package_summary
 
 OPENCLI_VERSION = "0.1"
 _PACKAGE_NAME = __name__.split(".")[0]
@@ -51,9 +51,16 @@ def document(root: Any) -> dict:
             "x-rb-env": env_vars(),
             "x-rb-data": data(),
             "x-rb-external": [asdict(spec) for spec in deps.declared().values()],
+            "x-rb-skills": _bundled_skills(),
         }
     )
     return {"opencli": OPENCLI_VERSION, "info": info(), "command": command}
+
+
+def _bundled_skills() -> list[dict]:
+    """The agent skills the package ships (the package skill part, copier's include_skill); none without it."""
+    skills = optional_module(f"{_PACKAGE_NAME}.core.skills")
+    return [{"name": s.name, "description": s.description} for s in skills.bundled()] if skills else []
 
 
 def info() -> dict:

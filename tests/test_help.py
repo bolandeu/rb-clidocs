@@ -4,7 +4,7 @@ Help text is rendered from command docstrings and `typer.Option`/`Argument`
 `help=` strings — it's the documentation agents and humans read, so it's
 tested like an API:
 
-- the help standard (skills/cli-builder/reference/help-standard.md) on every command, walked from the app's
+- the help standard (the cli-generator Standard, Commands) on every command, walked from the app's
   registry so a new command is covered automatically: a one-line summary, one to three `Example:` lines that
   parse against the command tree, help on every parameter, no parameter help repeated in the description.
   A command not yet brought to the standard is listed in tests/help_allowlist.txt (one command path per line,
@@ -19,6 +19,8 @@ tested like an API:
 
 from __future__ import annotations
 
+import inspect
+import re
 import shlex
 from collections.abc import Callable, Iterator
 from pathlib import Path
@@ -26,17 +28,26 @@ from typing import Any
 
 import pytest
 import typer
+import typer.rich_utils
 from syrupy.extensions.single_file import SingleFileSnapshotExtension, WriteMode
 from typer.testing import CliRunner
 
 from rb_clidocs import output
 from rb_clidocs.cli import app
-from rb_clidocs.core import docs, opencli
 
 CLI = "clidocs"
 SNAPSHOT_DIR = Path(__file__).parent / "snapshots" / "help"
 ALLOWLIST = Path(__file__).parent / "help_allowlist.txt"
 MAX_EXAMPLES = 3
+EXAMPLE = "Example: "
+RESULT = "-> "  # the line after an example: what it gives
+# A docstring line that explains parameters: «mode: …», «`action`: …», «core, column: …», «first / last: …».
+PARAM_NAMES = r"`?\w+`?(?:(?:, | / )`?\w+`?)*"
+PARAM_LINE = re.compile(rf"^(?P<names>{PARAM_NAMES}): ")
+# The explanation of another parameter inside a line, after the end of a sentence: «… is bad. good: a phrase …».
+INLINE_PARAM = re.compile(rf"(?<=[.;]) (?P<names>{PARAM_NAMES}): ")
+LIST_ITEM = re.compile(r"^(?:[-*]|\d+[.)]) ")
+SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
 # Fixed width and no colour so the rendering doesn't depend on the terminal running the tests.
 HELP_ENV = {"COLUMNS": "100", "NO_COLOR": "1", "TERM": "dumb"}
 
@@ -61,6 +72,12 @@ def _groups(group: typer.Typer, prefix: tuple[str, ...] = ()) -> Iterator[tuple[
 COMMANDS = dict(_commands(app))
 GROUPS = dict(_groups(app))
 HELP_PAGES = sorted([*COMMANDS, *GROUPS])
+
+
+@pytest.fixture(autouse=True)
+def _plain_help(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Typer reads GITHUB_ACTIONS / FORCE_COLOR / PY_COLORS once, at import, and then forces terminal output (CI)."""
+    monkeypatch.setattr(typer.rich_utils, "FORCE_TERMINAL", False)
 
 
 def _slug(path: tuple[str, ...]) -> str:
@@ -92,6 +109,10 @@ class HelpSnapshot(SingleFileSnapshotExtension):
 @pytest.mark.parametrize("path", HELP_PAGES, ids=_slug)
 def test_help_snapshot(path: tuple[str, ...], snapshot) -> None:
     assert _render_help(path) == snapshot(extension_class=HelpSnapshot, name=_slug(path))
+
+
+def test_help_is_the_same_in_ci(same_in_ci: Callable[[str], None]) -> None:
+    same_in_ci("test_help_snapshot")
 
 
 def test_no_orphan_help_snapshots() -> None:
@@ -140,30 +161,64 @@ def _example_failure(path: tuple[str, ...], command: Any, example: str) -> str |
     return None
 
 
-class _OwnExamples(docs.Hook):
-    """The document keeps an example only after its command path; this test checks the path itself, with the parse."""
-
-    def example(self, path, command):
-        return " ".join([CLI, *path])
+def _cleaned(text: str | None) -> str:
+    """A help text as the docstring wrote it: output.guard escaped `[` for Typer's rich markup."""
+    return inspect.cleandoc(text or "").replace("\\[", "[").strip()
 
 
-def _descriptions(nodes: list[dict], path: tuple[str, ...] = ()) -> Iterator[tuple[tuple[str, ...], str]]:
-    for node in nodes:
-        yield (*path, node["name"]), node.get("description", "")
-        yield from _descriptions(node.get("commands", []), (*path, node["name"]))
+def _param_names(found: re.Match[str]) -> list[str]:
+    return [name.strip("`") for name in re.split(r", | / ", found["names"])]
 
 
-def _failures(path: tuple[str, ...], command: Any, description: str) -> list[str]:
+def _doc_lines(paragraph: str, params: set[str]) -> list[str]:
+    """The lines of a docstring paragraph as the help shows them.
+
+    A line goes on the line before it, unless it starts an item of a list, the explanation of parameters, an example or
+    its result; so does the explanation of a parameter that follows the end of a sentence.
+    """
+    lines: list[str] = []
+    for line in paragraph.splitlines():
+        text = line.strip()
+        if lines and not (PARAM_LINE.match(text) or LIST_ITEM.match(text) or text.startswith((EXAMPLE, RESULT))):
+            lines[-1] += f" {text}"
+        else:
+            lines.append(text)
+    split: list[str] = []
+    for line in lines:
+        start = 0
+        for found in INLINE_PARAM.finditer(line):
+            if all(name in params for name in _param_names(found)):
+                split.append(line[start : found.start()])
+                start = found.start() + 1
+        split.append(line[start:])
+    return split
+
+
+def _described(lines: list[str], params: set[str]) -> list[str]:
+    """The lines of a paragraph that describe the command: no parameter line (nor the items of its list), no example."""
+    kept, in_param = [], False
+    for line in lines:
+        if in_param and LIST_ITEM.match(line):
+            continue
+        found = PARAM_LINE.match(line)
+        in_param = bool(found) and any(name in params for name in _param_names(found))
+        if not in_param and not line.startswith((EXAMPLE, RESULT)):
+            kept.append(line)
+    return kept
+
+
+def _failures(path: tuple[str, ...], command: Any) -> list[str]:
     """The rules of the help standard that the command breaks, each as a line naming the command."""
     name = " ".join(path)
-    help_text = opencli.cleaned(command.help)
+    help_text = _cleaned(command.help)
     found: list[str] = []
     if not help_text:
         return [f"`{name}`: no docstring"]
     params = {param.name for param in command.params}
-    lines = [line for paragraph in help_text.split("\n\n") for line in docs.doc_lines(paragraph, params)]
-    examples = [line.removeprefix(docs.EXAMPLE) for line in lines if line.startswith(docs.EXAMPLE)]
-    summary = description.split("\n\n")[0]
+    paragraphs = [_doc_lines(paragraph, params) for paragraph in help_text.split("\n\n")]
+    examples = [line.removeprefix(EXAMPLE) for lines in paragraphs for line in lines if line.startswith(EXAMPLE)]
+    described = [line for lines in paragraphs for line in _described(lines, params)]
+    summary = SENTENCE_END.split(described[0], maxsplit=1)[0] if described else ""
     if not summary:
         found.append(f"`{name}`: no summary")
     elif not help_text.splitlines()[0].startswith(summary):
@@ -175,7 +230,7 @@ def _failures(path: tuple[str, ...], command: Any, description: str) -> list[str
     for example in examples:
         if problem := _example_failure(path, command, example):
             found.append(f"`{name}`: example `{example}` {problem}")
-    flat = " ".join(description.split())
+    flat = " ".join(" ".join(described).split())
     for param in command.params:
         help_of_param = " ".join((getattr(param, "help", None) or "").split())
         if not help_of_param:
@@ -187,9 +242,7 @@ def _failures(path: tuple[str, ...], command: Any, description: str) -> list[str
 
 def help_failures(root: typer.Typer) -> dict[tuple[str, ...], list[str]]:
     """The failures of every command of `root`, by command path; a command that meets the standard is absent."""
-    click_root = typer.main.get_command(root)
-    descriptions = dict(_descriptions(docs.document(click_root, _OwnExamples()).get("commands", [])))
-    found = {path: _failures(path, command, descriptions.get(path, "")) for path, command in _leaves(click_root)}
+    found = {path: _failures(path, command) for path, command in _leaves(typer.main.get_command(root))}
     return {path: failures for path, failures in found.items() if failures}
 
 

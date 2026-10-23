@@ -2,8 +2,7 @@
 """Block a command's logic from changing without its docstring changing too.
 
 Every command function's docstring is what Typer renders as `--help` —
-the documentation agents and humans read (see architecture.md, "AI-first
-output"). A command is a function in `src/*/commands/*.py` (or the globs in
+the documentation agents and humans read (the Standard, Commands). A command is a function in `src/*/commands/*.py` (or the globs in
 `[tool.cli-generator] commands` in pyproject.toml) decorated with
 `output.guard` or registered with `@<app>.command(...)`; "logic" is its signature plus its body minus the
 docstring. Antagor runs it as one of the project's `checks` (`.agents/antagor/antagor.toml`)
@@ -37,7 +36,7 @@ def command_globs() -> tuple[str, ...]:
         return DEFAULT_COMMAND_FILES
     try:
         config = tomllib.loads(Path("pyproject.toml").read_text()).get("tool", {}).get("cli-generator", {})
-    except (OSError, tomllib.TOMLDecodeError):
+    except OSError, tomllib.TOMLDecodeError:
         return DEFAULT_COMMAND_FILES
     value = config.get("commands", DEFAULT_COMMAND_FILES)
     return (value,) if isinstance(value, str) else tuple(value)
