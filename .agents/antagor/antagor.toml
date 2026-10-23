@@ -1,5 +1,6 @@
 schema = 1
-prefix = "CD"
+mode = "fast"
+prefix = "CLIDOCS"
 name = "clidocs"
 checks = ["python3 scripts/check_command_docstrings.py"]
 heavy = ["rb-release check"]
@@ -30,3 +31,6 @@ in_review = "In Review"
 publish = "Publishing"
 done = "Done"
 cancelled = "Cancelled"
+
+[daemon]
+enabled = true
