@@ -5,13 +5,13 @@ dynamic = ["version"]
 description = "Human CLI help in the browser: renders a tool's docs with InSpectra"
 readme = "README.md"
 authors = [{ name = "Roman Bolandau" }]
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
     "typer>=0.12",
-    "pydantic>=2.6",
     "rich>=13.7",
-    "platformdirs>=4.2",
+    "pydantic>=2.6",
     "tomli-w>=1.0",
+    "platformdirs>=4.2",
     "packaging>=24.0",
 ]
 
@@ -37,6 +37,18 @@ fallback-version = "0.0.0"
 # Rebuild the editable install when a commit or tag moves, so `--version` follows the tag.
 cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true, tags = true } }]
 
+# Our packages come only from the Gitea registry: a version range in
+# `dependencies` ("rb-serp>=0.3") and a source line per package, never a git
+# tag. explicit = true: only the packages named in [tool.uv.sources] are looked
+# up there, and they are never taken from PyPI (an unrelated package of the
+# same name may live there).
+# [tool.uv.sources]
+# rb-serp = { index = "gitea" }
+[[tool.uv.index]]
+name = "gitea"
+url = "https://homeserver.tailee01ab.ts.net:3000/api/packages/bolandeu/pypi/simple"
+explicit = true
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/rb_clidocs"]
 
@@ -52,7 +64,7 @@ mutation = ["mutmut>=3.3"]
 dev = [
     "jsonschema>=4.23",
     "pytest>=8.0",
-    "pyyaml>=6.0",  # tests/contracts/*.yaml
+    "pyyaml>=6.0",  # .copier-answers.yml, the CI workflow, tests/contracts/*.yaml
     "pytest-cov>=5.0",
     "ruff>=0.6",
     "syrupy>=4.8",
@@ -62,7 +74,7 @@ dev = [
 # External (non-Python) dependencies — every CLI this tool runs (require_cli,
 # shutil.which, subprocess with a literal program, npx). The gate checks this
 # list against the code both ways; doctor and require_cli read it at runtime;
-# the tools catalog reads it (standard §12).
+# the tools catalog reads it (the Standard, Technology).
 [[tool.rb.external]]
 name = "inspectra"
 required = true
@@ -80,11 +92,19 @@ detect = false                # run by absolute path (PATH or ~/.dotnet/tools)
 # dist = "rb-serp"              # for one of our CLIs: its distribution (default rb-<name>)
 # url = "https://github.com/bolandeu/serp"  # its repo: DEPENDENCY_TOO_OLD then prints a pinned install
 
+# Where sysadmin's tool-updater installs this tool after its first tag. The
+# installation is sysadmin's; this section only says where. homeserver: users
+# to install for (empty = build and publish only); mac: install on the Mac.
+# extras (optional): the extras to install with, e.g. extras = ["browser"].
+[tool.rb.install]
+homeserver = ["rbtools"]
+mac = true
+
 [tool.cli-generator]
 # Where scripts/check_command_docstrings.py (called by the project's checks)
 # looks for commands: a glob or a list of globs, relative to the repo root.
 commands = ["src/rb_clidocs/commands/*.py"]
-# scripts/release.py: extras to install before ruff/ty/pytest in the gate.
+# rb-release check (the gate): extras to install before ruff/ty/pytest.
 # gate_extras = ["browser"]
 
 [tool.pytest.ini_options]
@@ -92,7 +112,7 @@ commands = ["src/rb_clidocs/commands/*.py"]
 testpaths = ["tests"]
 addopts = "--cov --cov-report=term-missing:skip-covered"
 # tests/test_help.py keeps help snapshots at tests/snapshots/help/<command>.txt
-# (standard §7), not in syrupy's own `__snapshots__/<test file>/` layout, so
+# (the Standard, Commands), not in syrupy's own `__snapshots__/<test file>/` layout, so
 # syrupy warns it "can not relate" each file to its test. It can — by name.
 filterwarnings = ["ignore:(?s).*Can not relate snapshot:UserWarning"]
 

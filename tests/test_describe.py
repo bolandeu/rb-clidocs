@@ -6,7 +6,7 @@
   it lists shows up in that command's --help;
 - snapshot: tests/snapshots/describe.json (syrupy). A changed contract fails until
   the snapshot is refreshed with `uv run pytest --snapshot-update`, which puts the
-  change in the diff — review it like any other breaking change (conventions.md).
+  change in the diff — review it like any other breaking change.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from __future__ import annotations
 import enum
 import json
 import re
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import jsonschema
@@ -117,6 +117,10 @@ class DescribeSnapshot(SingleFileSnapshotExtension):
     @classmethod
     def get_snapshot_name(cls, *, test_location, index=0) -> str:
         return "describe"
+
+
+def test_describe_is_the_same_in_ci(same_in_ci: Callable[[str], None]) -> None:
+    same_in_ci("test_describe_snapshot")
 
 
 def test_describe_snapshot(snapshot) -> None:
