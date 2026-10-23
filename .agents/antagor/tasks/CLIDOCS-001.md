@@ -3,8 +3,8 @@ id: CLIDOCS-001
 title: Apply the verified copier update to template v1.27.1
 status: in_progress
 attempts: 2
-blocked: true
-blocked_reason: needs_scope
+blocked: false
+blocked_reason: null
 phase: null
 tests_hash: null
 publish_stage: null
@@ -178,3 +178,7 @@ FAILED tests/test_scripts.py::test_antagor_project_config - KeyError: 'worker'
 ======================== 16 failed, 170 passed in 6.35s ========================
 release: code failed
 ```
+
+### Blocked: needs_scope (entries [{'n': 1, 'text': 'The last check runs rb-release with --project /Users/bolandau/Work/tools/clidocs (main checkout, branch main, patch not applied), so it fails with the same 16 pytest failures on every attempt; the sam'}])
+
+Gate check fixed to run in the worktree (no --project); same work 71dc339.
