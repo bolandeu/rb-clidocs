@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: v1.18.1
+_commit: v1.27.1
 _src_path: https://homeserver.tailee01ab.ts.net:3000/bolandeu/cli-generator.git
 antagor_prefix: CD
 author_name: Roman Bolandau
@@ -8,9 +8,14 @@ description: 'Human CLI help in the browser: renders a tool''s docs with InSpect
 dist_name: rb-clidocs
 dist_name_legacy: ''
 include_auth: false
-include_ci: false
+include_contracts: true
 include_db: false
+include_describe: true
+include_project: true
 include_providers: false
+include_skill: true
+install_homeserver_users: rbtools
+install_mac: true
 package_name: rb_clidocs
 project_name: clidocs
 repository_url: https://github.com/bolandeu/clidocs
