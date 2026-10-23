@@ -182,3 +182,15 @@ release: code failed
 ### Blocked: needs_scope (entries [{'n': 1, 'text': 'The last check runs rb-release with --project /Users/bolandau/Work/tools/clidocs (main checkout, branch main, patch not applied), so it fails with the same 16 pytest failures on every attempt; the sam'}])
 
 Gate check fixed to run in the worktree (no --project); same work 71dc339.
+
+### Answer to question #1
+
+> The last check runs rb-release with --project /Users/bolandau/Work/tools/clidocs (main checkout, branch main, patch not applied), so it fails with the same 16 pytest failures on every attempt; the same gate with --project /Users/bolandau/Work/tools/clidocs.worktrees/CLIDOCS-001 passes ('gate passed'), and the other four checks pass in the worktree.
+> Question: How should the task's last check be run?
+> Options:
+> 1. Change the check to use the worktree path
+> 2. Accept the worktree-path gate result as the proof and merge
+> 3. Run the check after the merge to main
+> Recommended: Change the check to use the worktree path
+
+Option 1: the check now runs in the worktree (no --project).
