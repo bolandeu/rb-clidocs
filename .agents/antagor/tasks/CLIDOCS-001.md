@@ -42,7 +42,7 @@ checks:
 - uv run ruff format --check .
 - uv lock --check
 - uvx --from 'git+https://homeserver.tailee01ab.ts.net:3000/bolandeu/cli-generator.git@v1.27.1#subdirectory=gate'
-  rb-release --project /Users/bolandau/Work/tools/clidocs check
+  rb-release check
 resident: null
 tool: null
 pr: null
