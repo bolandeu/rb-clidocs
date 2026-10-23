@@ -3,8 +3,8 @@ id: CLIDOCS-001
 title: Apply the verified copier update to template v1.27.1
 status: in_progress
 attempts: 1
-blocked: true
-blocked_reason: no_progress
+blocked: false
+blocked_reason: null
 phase: null
 tests_hash: null
 publish_stage: null
@@ -116,3 +116,7 @@ FAILED tests/test_scripts.py::test_antagor_project_config - KeyError: 'worker'
 ======================== 16 failed, 170 passed in 5.83s ========================
 release: code failed
 ```
+
+### Blocked: no_progress (head 71dc339c16ffc4c91ab45f782691d93bebde4fef)
+
+Work is on the branch (patch applied, patch file deleted, one commit 71dc339); recheck the same work.
