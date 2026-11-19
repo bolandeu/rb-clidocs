@@ -20,15 +20,15 @@ an empty working directory — never a blind `TOOL docs`.
 ```bash
 uv sync
 uv run clidocs --help
-uv run scripts/release.py --check   # the full gate (run before every commit; CI runs it too)
+gate check                        # the full gate (run before every commit, on this machine)
 uv run pytest --snapshot-update  # after changing a command's help; review tests/snapshots/help/
 ```
 
 `pytest` fails below the coverage floor in `pyproject.toml`; `ruff` includes
 the security (`S`) rules; the gate also scans `uv.lock` for known
 vulnerabilities when `osv-scanner` is installed (`brew install osv-scanner`),
-and says it skipped the scan otherwise. CI is optional and only repeats
-`release.py --check`.
+and says it skipped the scan otherwise. The gate runs locally: `[publish]
+gate_command` in `.agents/antagor/antagor.toml`; no workflow runs it.
 
 ## Release
 
