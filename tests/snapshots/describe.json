@@ -3,7 +3,7 @@
   "info": {
     "title": "clidocs",
     "version": "<version>",
-    "summary": "Human CLI help in the browser: renders a tool's docs with InSpectra"
+    "summary": "Human-readable CLI help in the browser: renders a tool's docs with InSpectra."
   },
   "command": {
     "name": "clidocs",
