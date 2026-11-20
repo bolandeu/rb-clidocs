@@ -363,7 +363,7 @@
       },
       {
         "name": "init",
-        "description": "Initialize a project: creates .rb_clidocs/config.toml in the target directory.\n\nExample: clidocs init --name demo",
+        "description": "Initialize a project: creates .clidocs/config.toml in the target directory.\n\nExample: clidocs init --name demo",
         "options": [
           {
             "name": "--name",
